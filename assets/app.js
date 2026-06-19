@@ -177,15 +177,22 @@
       var list=load(todoKey(current.name),[]);
       function r(){
         save(todoKey(current.name),list);
-        var items=list.length? list.map(function(t,i){return '<div class="todo-item '+(t.done?'done':'')+'"><div class="todo-check" data-i="'+i+'">'+(t.done?'<i class="ti ti-check"></i>':'')+'</div><div class="todo-text" data-i="'+i+'">'+esc(t.text)+'</div><button class="del-btn" data-i="'+i+'"><i class="ti ti-trash"></i></button></div>';}).join('') : '<div class="empty-hint">ما في مهام بعد — ضيف مهمة من فوق</div>';
+        var items=list.length? list.map(function(t,i){
+          if(!t.subs)t.subs=[];
+          var subs=t.subs.map(function(s,si){return '<div style="display:flex;align-items:center;gap:10px;padding:5px 0 5px 30px"><span class="sub-check" data-i="'+i+'" data-si="'+si+'" style="width:18px;height:18px;border:2px solid '+(s.done?'#0E8A94':'#CBD3D3')+';background:'+(s.done?'#0E8A94':'#fff')+';border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;flex:0 0 auto">'+(s.done?'✓':'')+'</span><span style="flex:1;font-size:13px'+(s.done?';text-decoration:line-through;color:var(--faint)':'')+'">'+esc(s.text)+'</span><button class="sub-del" data-i="'+i+'" data-si="'+si+'" style="background:none;border:none;color:var(--faint);cursor:pointer">✕</button></div>';}).join('');
+          return '<div class="todo-item '+(t.done?'done':'')+'"><div class="todo-check main-check" data-i="'+i+'">'+(t.done?'<i class="ti ti-check"></i>':'')+'</div><div class="todo-text main-text" data-i="'+i+'">'+esc(t.text)+'</div><button class="del-btn main-del" data-i="'+i+'"><i class="ti ti-trash"></i></button></div>'+subs+'<div style="padding:2px 4px 12px 30px"><input class="sub-input" data-i="'+i+'" placeholder="+ خطوة فرعية" style="width:65%;height:30px;border:0.5px solid #E0E0E0;border-radius:6px;padding:0 10px;font-size:12px;font-family:inherit" /></div>';
+        }).join('') : '<div class="empty-hint">ما في مهام بعد — ضيف مهمة من فوق</div>';
         todoPanel.innerHTML='<h2><i class="ti ti-checklist" style="color:var(--teal-deep)"></i> مهام '+esc(current.name)+'</h2><div class="todo-add"><input id="todo-input" placeholder="اكتب مهمة جديدة لـ '+esc(current.name)+'..." /><button class="btn-add" id="todo-add-btn"><i class="ti ti-plus"></i> إضافة</button></div>'+items;
         var inp=document.getElementById('todo-input');
-        function add(){ var v=inp.value.trim(); if(!v)return; list.push({text:v,done:false}); inp.value=''; r(); renderPeople(); }
+        function add(){ var v=inp.value.trim(); if(!v)return; list.push({text:v,done:false,subs:[]}); inp.value=''; r(); renderPeople(); }
         document.getElementById('todo-add-btn').addEventListener('click',add);
         inp.addEventListener('keydown',function(e){if(e.key==='Enter')add();});
-        todoPanel.querySelectorAll('.todo-check').forEach(function(c){c.addEventListener('click',function(){list[+c.dataset.i].done=!list[+c.dataset.i].done;r();renderPeople();});});
-        todoPanel.querySelectorAll('.del-btn').forEach(function(d){d.addEventListener('click',function(){list.splice(+d.dataset.i,1);r();renderPeople();});});
-        todoPanel.querySelectorAll('.todo-text').forEach(function(t){t.addEventListener('dblclick',function(){var nv=prompt('تعديل المهمة:',list[+t.dataset.i].text);if(nv&&nv.trim()){list[+t.dataset.i].text=nv.trim();r();}});});
+        todoPanel.querySelectorAll('.main-check').forEach(function(c){c.addEventListener('click',function(){list[+c.dataset.i].done=!list[+c.dataset.i].done;r();renderPeople();});});
+        todoPanel.querySelectorAll('.main-del').forEach(function(d){d.addEventListener('click',function(){list.splice(+d.dataset.i,1);r();renderPeople();});});
+        todoPanel.querySelectorAll('.main-text').forEach(function(t){t.addEventListener('dblclick',function(){var nv=prompt('تعديل المهمة:',list[+t.dataset.i].text);if(nv&&nv.trim()){list[+t.dataset.i].text=nv.trim();r();}});});
+        todoPanel.querySelectorAll('.sub-check').forEach(function(c){c.addEventListener('click',function(){var t=list[+c.dataset.i];t.subs[+c.dataset.si].done=!t.subs[+c.dataset.si].done;r();});});
+        todoPanel.querySelectorAll('.sub-del').forEach(function(d){d.addEventListener('click',function(){list[+d.dataset.i].subs.splice(+d.dataset.si,1);r();});});
+        todoPanel.querySelectorAll('.sub-input').forEach(function(si2){si2.addEventListener('keydown',function(e){if(e.key==='Enter'){var v=si2.value.trim();if(!v)return;var t=list[+si2.dataset.i];if(!t.subs)t.subs=[];t.subs.push({text:v,done:false});r();}});});
       }
       r();
     }
@@ -262,6 +269,57 @@
     var MK='tanfeez_x_materials'; var ms=load(MK,[]);
     ms.forEach(function(o){var tr=document.createElement('tr');tr.innerHTML='<td>'+esc(o.name)+' <span class="added-badge">جديد</span></td><td>'+esc(o.unit)+'</td><td>'+esc(o.bought)+'</td><td>'+esc(o.used||'0')+'</td><td>'+esc(o.left||o.bought)+'</td>';matBody.insertBefore(tr,matBody.firstChild);});
     addMat.addEventListener('click',function(){ modal('إضافة مادة','مادة للمشروع',[{l:'المادة',n:'name',t:'text'},{l:'الوحدة',n:'unit',t:'text'},{l:'الكمية المشتراة',n:'bought',t:'text'}],function(o){ms.push(o);save(MK,ms);var tr=document.createElement('tr');tr.innerHTML='<td>'+esc(o.name)+' <span class="added-badge">جديد</span></td><td>'+esc(o.unit)+'</td><td>'+esc(o.bought)+'</td><td>0</td><td>'+esc(o.bought)+'</td>';matBody.insertBefore(tr,matBody.firstChild);toast('تمت الإضافة ✓');}); });
+  }
+
+  // ---------- generic CRUD table ----------
+  function crudTable(o){
+    var body=document.getElementById(o.bodyId); if(!body)return null;
+    var data=load(o.key,o.seed);
+    function r(){ save(o.key,data); body.innerHTML=data.map(function(it,i){return o.row(it,i);}).join('');
+      body.querySelectorAll('.crud-del').forEach(function(b){b.addEventListener('click',function(){data.splice(+b.getAttribute('data-i'),1);r();toast('تم الحذف');});});
+      body.querySelectorAll('.crud-edit').forEach(function(b){b.addEventListener('click',function(){var i=+b.getAttribute('data-i');modal(o.title,'تعديل',o.fields,function(v){data[i]=v;r();toast('تم التعديل');},data[i]);});});
+    }
+    r();
+    var add=document.getElementById(o.addBtn); if(add)add.addEventListener('click',function(){modal(o.title,o.sub||'',o.fields,function(v){data.push(v);r();toast('تمت الإضافة ✓');});});
+    return {get:function(){return data;}};
+  }
+
+  // ---------- Project finance: material movements + inventory ----------
+  if(document.getElementById('matmove-body')){
+    var mm=crudTable({ bodyId:'matmove-body', addBtn:'add-matmove', key:'tanfeez_matmove', title:'حركة مادة',
+      fields:[{l:'المادة',n:'material',t:'text'},{l:'شراء',n:'buy',t:'text'},{l:'استعمال',n:'use',t:'text'},{l:'إرجاع',n:'ret',t:'text'},{l:'هدر',n:'waste',t:'text'}],
+      seed:[{material:'نحاس وتمديدات',buy:'٦٥٠ م.ط',use:'٥٠٠ م.ط',ret:'٣٠ م.ط',waste:'٢٠ م.ط'},{material:'دكت مجلفن',buy:'٤٢٠ م²',use:'٣٠٠ م²',ret:'٠',waste:'١٠ م²'},{material:'عوازل حرارية',buy:'٤٢٠ م²',use:'٢٩٠ م²',ret:'١٥ م²',waste:'٥ م²'},{material:'وحدات Split',buy:'١٨ عدد',use:'١٣ عدد',ret:'٠',waste:'٠'}],
+      row:function(it,i){return '<tr><td>'+esc(it.material)+'</td><td>'+esc(it.buy)+'</td><td>'+esc(it.use)+'</td><td>'+esc(it.ret)+'</td><td>'+esc(it.waste)+'</td><td><div class="row-actions"><button class="btn-mini crud-edit" data-i="'+i+'">تعديل</button><button class="btn-mini danger crud-del" data-i="'+i+'">حذف</button></div></td></tr>';}
+    });
+    var inv=document.getElementById('inventory-btn');
+    if(inv&&mm)inv.addEventListener('click',function(){ var d=mm.get(); var rows=d.map(function(it){return '<tr><td>'+esc(it.material)+'</td><td>'+esc(it.buy)+'</td><td>'+esc(it.use)+'</td><td>'+esc(it.ret)+'</td><td>'+esc(it.waste)+'</td></tr>';}).join(''); var w=window.open('','_blank'); w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>حصر المواد</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — حصر مواد المشروع</h1><h3>برج الياسمين · '+new Date().toLocaleDateString('ar-EG')+'</h3><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;text-align:right"><tr style="background:#F4FBFB"><th>المادة</th><th>شراء</th><th>استعمال</th><th>إرجاع</th><th>هدر</th></tr>'+rows+'</table></body></html>'); w.document.close(); w.print(); toast('تم تجهيز حصر المواد للطباعة'); });
+  }
+
+  // ---------- Project finance: subcontractors ----------
+  if(document.getElementById('subcl-body')){
+    crudTable({ bodyId:'subcl-body', addBtn:'add-subcl', key:'tanfeez_subcl', title:'مطالبة مقاول فرعي',
+      fields:[{l:'المقاول',n:'contractor',t:'text'},{l:'العمل',n:'work',t:'text'},{l:'الكمية المنجزة',n:'qty',t:'text'},{l:'المستحق',n:'due',t:'text'},{l:'الحالة',n:'status',t:'select',o:['بانتظار الدفع','مدفوع جزئي','مدفوع']}],
+      seed:[{contractor:'مؤسسة النور للعزل',work:'عزل حراري للدكت',qty:'٢٩٠ م²',due:'٢٬٣٢٠ د.أ',status:'بانتظار الدفع'},{contractor:'ورشة الحداد',work:'تصنيع دكت',qty:'٣٠٠ م²',due:'٣٬٦٠٠ د.أ',status:'مدفوع جزئي'},{contractor:'فني تمديدات',work:'توصيلات نحاس',qty:'٥٠٠ م.ط',due:'١٬٥٠٠ د.أ',status:'بانتظار الدفع'}],
+      row:function(it,i){var cl={'بانتظار الدفع':'tag-warn','مدفوع جزئي':'tag-teal','مدفوع':'tag-teal'}[it.status]||'tag-warn';return '<tr><td>'+esc(it.contractor)+'</td><td>'+esc(it.work)+'</td><td>'+esc(it.qty)+'</td><td>'+esc(it.due)+'</td><td><span class="tag '+cl+'">'+esc(it.status)+'</span></td><td><div class="row-actions"><button class="btn-mini crud-edit" data-i="'+i+'">تعديل</button><button class="btn-mini danger crud-del" data-i="'+i+'">حذف</button></div></td></tr>';}
+    });
+  }
+
+  // ---------- Project finance: make our invoice ----------
+  var mkInv=document.getElementById('make-invoice');
+  if(mkInv)mkInv.addEventListener('click',function(){
+    var total='٤٢٬٧٠٠ د.أ';
+    var inv=load('tanfeez_x_invoices',[]); inv.push({client:'شركة الياسمين العقارية',type:'مطالبة مرحلية',value:total,creator:(session&&session.name)||'—'}); save('tanfeez_x_invoices',inv);
+    var w=window.open('','_blank'); w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>فاتورة</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — مطالبة مالية</h1><p><b>العميل:</b> شركة الياسمين العقارية</p><p><b>المشروع:</b> برج الياسمين</p><p><b>التاريخ:</b> '+new Date().toLocaleDateString('ar-EG')+'</p><hr><p style="font-size:20px"><b>إجمالي المطالبة: '+total+'</b></p></body></html>'); w.document.close(); w.print();
+    toast('تم إنشاء الفاتورة وإضافتها لصفحة الفواتير');
+  });
+
+  // ---------- Project: create report ----------
+  var addReport=document.getElementById('add-report');
+  if(addReport){
+    var prl=document.getElementById('proj-reports-list'), RK='tanfeez_proj_reports', prs=load(RK,[]);
+    function renderPR(o){ var d=document.createElement('div'); d.className='row'; d.innerHTML='<span>'+esc(o.type)+' · '+esc(o.date)+' · '+esc((session&&session.name)||'م. أحمد')+' <span class="added-badge">جديد</span></span><span class="tag tag-warn">لم يُرسل</span>'; prl.insertBefore(d,prl.firstChild); }
+    prs.forEach(renderPR);
+    addReport.addEventListener('click',function(){ modal('إنشاء تقرير','تقرير للمشروع',[{l:'النوع',n:'type',t:'select',o:['تقرير يومي','تقرير أسبوعي']},{l:'الوصف / الملاحظات',n:'desc',t:'text'}],function(o){ o.date=new Date().toLocaleDateString('ar-EG'); prs.push(o); save(RK,prs); renderPR(o); toast('تم إنشاء التقرير ✓'); }); });
   }
 
   // ---------- Employee profile ----------
