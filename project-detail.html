@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>برج الياسمين — TANFEEZ.MEP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="logo"><img src="assets/logo.jpg" alt="TANFEEZ.MEP" /></div></div>
+      <nav class="nav">
+        <a href="index.html"><i class="ti ti-layout-dashboard"></i> لوحة التحكّم</a>
+        <a href="projects.html" class="active"><i class="ti ti-building-community"></i> المشاريع</a>
+        <a href="tasks.html"><i class="ti ti-checklist"></i> المهام</a>
+        <a href="purchase-requests.html"><i class="ti ti-shopping-cart"></i> طلبات الشراء</a>
+        <a href="invoices.html"><i class="ti ti-file-invoice"></i> الفواتير</a>
+        <a href="finance.html"><i class="ti ti-lock"></i> المالية</a>
+        <a href="team.html"><i class="ti ti-users"></i> الفريق</a>
+        <a href="clients.html"><i class="ti ti-users-group"></i> العملاء</a>
+        <a href="reports.html"><i class="ti ti-report-analytics"></i> التقارير</a>
+      </nav>
+      <div class="foot"><a href="client.html"><i class="ti ti-eye"></i> معاينة شاشة العميل</a><br/><br/>TANFEEZ Contracting W.L.L<br/>© 2025</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="logo" style="height:38px"><img src="assets/logo.jpg" alt="TANFEEZ.MEP" style="height:38px" /></div>
+        <div class="right">
+          <svg class="flag" viewBox="0 0 30 20" width="24" height="16" aria-label="علم الأردن"><rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#000"/><rect width="30" height="6.66" y="13.34" fill="#007a3d"/><polygon points="0,0 15,10 0,20" fill="#ce1126"/><circle cx="4.6" cy="10" r="1.5" fill="#fff"/></svg>
+          <button class="icon-btn" aria-label="الإشعارات"><i class="ti ti-bell"></i><span class="badge-dot">3</span></button>
+          <div class="avatar" title="م. يزن حمّاد">يح</div>
+        </div>
+      </header>
+      <div class="content">
+        <div class="page-head"><div><h1>برج الياسمين</h1><p class="sub">تكييف مركزي · عمّان — الياسمين</p></div><span class="pill"><span class="status status-active">جاري</span></span></div>
+        <div class="kv">
+          <div><div class="k">العميل</div><div class="v">شركة الياسمين العقارية</div></div>
+          <div><div class="k">المهندس المسؤول</div><div class="v">م. أحمد</div></div>
+          <div><div class="k">عدد البنود</div><div class="v">34 بند</div></div>
+          <div><div class="k">الإنجاز (مرجّح بالقيمة)</div><div class="v" style="color:var(--teal-deep)">72%</div></div>
+        </div>
+        <div class="tabs"><a class="active">بنود BOQ</a><a href="#materials">المواد</a><a href="reports.html">التقارير</a><a href="finance.html">المالية</a></div>
+        <div class="tbl-wrap" style="margin-bottom:18px">
+          <table class="tbl"><thead><tr><th>البند</th><th>الوحدة</th><th>الكمية المخططة</th><th>المنجز</th><th>التقدّم</th><th>%</th></tr></thead>
+          <tbody><tr><td>توريد وتركيب وحدات Split</td><td>عدد</td><td>18</td><td>13</td><td><div class='bar' style='width:120px'><span style='width:72%'></span></div></td><td>72%</td></tr><tr><td>دكت تكييف مجلفن</td><td>م²</td><td>420</td><td>300</td><td><div class='bar' style='width:120px'><span style='width:71%'></span></div></td><td>71%</td></tr><tr><td>عوازل حرارية للدكت</td><td>م²</td><td>420</td><td>290</td><td><div class='bar' style='width:120px'><span style='width:69%'></span></div></td><td>69%</td></tr><tr><td>توصيلات نحاس وتمديدات</td><td>م.ط</td><td>650</td><td>500</td><td><div class='bar' style='width:120px'><span style='width:77%'></span></div></td><td>77%</td></tr><tr><td>لوحات تحكّم وثرموستات</td><td>عدد</td><td>12</td><td>8</td><td><div class='bar' style='width:120px'><span style='width:67%'></span></div></td><td>67%</td></tr></tbody></table>
+        </div>
+        <div class="section-title" id="materials"><h2>ملخّص المواد</h2></div>
+        <div class="metric-grid">
+          <div class="metric"><div class="label">مواد مشتراة</div><div class="val">١٢ صنف</div></div>
+          <div class="metric"><div class="label">مستخدمة بالموقع</div><div class="val teal">٩ أصناف</div></div>
+          <div class="metric"><div class="label">متبقية بالمستودع</div><div class="val">٣ أصناف</div></div>
+          <div class="metric"><div class="label">هدر مسجّل</div><div class="val warn">٢%</div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="assets/app.js"></script>
+</body>
+</html>

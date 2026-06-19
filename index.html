@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة التحكّم — TANFEEZ.MEP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="logo"><img src="assets/logo.jpg" alt="TANFEEZ.MEP" /></div></div>
+      <nav class="nav">
+        <a href="index.html" class="active"><i class="ti ti-layout-dashboard"></i> لوحة التحكّم</a>
+        <a href="projects.html"><i class="ti ti-building-community"></i> المشاريع</a>
+        <a href="tasks.html"><i class="ti ti-checklist"></i> المهام</a>
+        <a href="purchase-requests.html"><i class="ti ti-shopping-cart"></i> طلبات الشراء</a>
+        <a href="invoices.html"><i class="ti ti-file-invoice"></i> الفواتير</a>
+        <a href="finance.html"><i class="ti ti-lock"></i> المالية</a>
+        <a href="team.html"><i class="ti ti-users"></i> الفريق</a>
+        <a href="clients.html"><i class="ti ti-users-group"></i> العملاء</a>
+        <a href="reports.html"><i class="ti ti-report-analytics"></i> التقارير</a>
+      </nav>
+      <div class="foot"><a href="client.html"><i class="ti ti-eye"></i> معاينة شاشة العميل</a><br/><br/>TANFEEZ Contracting W.L.L<br/>© 2025</div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="logo" style="height:38px"><img src="assets/logo.jpg" alt="TANFEEZ.MEP" style="height:38px" /></div>
+        <div class="right">
+          <svg class="flag" viewBox="0 0 30 20" width="24" height="16" aria-label="علم الأردن"><rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#000"/><rect width="30" height="6.66" y="13.34" fill="#007a3d"/><polygon points="0,0 15,10 0,20" fill="#ce1126"/><circle cx="4.6" cy="10" r="1.5" fill="#fff"/></svg>
+          <button class="icon-btn" aria-label="الإشعارات"><i class="ti ti-bell"></i><span class="badge-dot">3</span></button>
+          <div class="avatar" title="م. يزن حمّاد">يح</div>
+        </div>
+      </header>
+      <div class="content">
+        <div class="page-head"><div><h1>لوحة التحكّم</h1><p class="sub">أهلاً، م. يزن حمّاد — نظرة سريعة على شركتك اليوم</p></div><span class="pill">7 مشاريع نشطة</span></div>
+        <div class="alert"><i class="ti ti-alarm"></i><span><b style="font-weight:500">فزعة:</b> برج الياسمين — نقص مواد عاجل، يحتاج موافقتك</span></div>
+        <div class="grid grid-2" style="margin-bottom:14px">
+          <section class="card">
+            <div class="card-head"><span class="title"><i class="ti ti-clipboard-check" style="color:var(--warn)"></i> أوامر تحتاج إجراءك</span><span class="tag tag-warn">3 بانتظارك</span></div>
+            <div class="row"><span class="lead"><i class="ti ti-shopping-cart"></i> طلب شراء — برج الياسمين</span><a class="link" href="purchase-requests.html">راجِع ›</a></div>
+            <div class="row"><span class="lead"><i class="ti ti-users"></i> مستحقات مقاول — فيلا عبدون</span><a class="link" href="purchase-requests.html">راجِع ›</a></div>
+            <div class="row"><span class="lead"><i class="ti ti-file-invoice"></i> اعتماد فاتورة — الصويفية</span><a class="link" href="invoices.html">راجِع ›</a></div>
+          </section>
+          <section class="card">
+            <div class="card-head"><span class="title"><i class="ti ti-checklist" style="color:var(--teal-deep)"></i> قائمة المهام (أنا ↔ المهندسين)</span><a class="more" href="tasks.html">عرض الكل ›</a></div>
+            <div class="row"><span class="lead">مراجعة مخطط التكييف · <span class="who">م. أحمد</span></span><span class="tag tag-warn">اليوم</span></div>
+            <div class="row"><span class="lead">اعتماد عرض سعر فيلا عبدون · <span class="who">م. خالد</span></span><span class="tag tag-danger">متأخر</span></div>
+            <div class="row"><span class="lead">صور موقع برج الياسمين · <span class="who">م. سامي</span></span><span class="tag tag-teal">غداً</span></div>
+          </section>
+        </div>
+        <section class="card finance" id="finance" style="margin-bottom:14px">
+          <div class="card-head"><span class="title"><i class="ti ti-lock"></i> المالية</span><span class="tag" style="color:#5F6B6B;background:#EAEFEF"><i class="ti ti-eye-off" style="font-size:13px;vertical-align:-2px"></i> محمي</span></div>
+          <div class="row" style="border:none"><span class="masked" id="finance-figures">التحصيل ٠٠٠٠ د.أ · الأرباح ٠٠٠٠ · المتأخرات ٠٠٠٠</span><button class="link" id="finance-toggle" style="background:none;border:none">اضغط للعرض ›</button></div>
+          <p class="hint">الأرقام المحاسبية مخفية عن العرض العام — تظهر لك وحدك بعد الدخول</p>
+        </section>
+        <div class="section-title"><h2>المشاريع الجارية</h2><a class="more" href="projects.html">عرض الكل ›</a></div>
+        <section class="card">
+          <div class="proj"><div class="meta"><span>برج الياسمين — تكييف</span><span class="pct">72%</span></div><div class="bar"><span style="width:72%"></span></div></div>
+          <div class="proj"><div class="meta"><span>فيلا عبدون — كهرباء</span><span class="pct">45%</span></div><div class="bar"><span style="width:45%"></span></div></div>
+          <div class="proj"><div class="meta"><span>مجمّع الصويفية — مكانيك</span><span class="pct">90%</span></div><div class="bar done"><span style="width:90%"></span></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="assets/app.js"></script>
+</body>
+</html>
