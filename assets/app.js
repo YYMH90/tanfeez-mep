@@ -310,14 +310,35 @@
     var ps=document.getElementById('post-subaccount'); if(ps)ps.addEventListener('click',function(){ postStmt('كشف حساب المقاولين الفرعيين','<th>المقاول</th><th>العمل</th><th>المستحق</th><th>الحالة</th>',function(it){return '<tr><td>'+(it.contractor||'')+'</td><td>'+(it.work||'')+'</td><td>'+(it.due||'')+'</td><td>'+(it.status||'')+'</td></tr>';}); toast('تم الترحيل على كشف حساب المقاول ✓'); });
   }
 
-  // ---------- Project finance: make our invoice ----------
-  var mkInv=document.getElementById('make-invoice');
-  if(mkInv)mkInv.addEventListener('click',function(){
-    var total='٤٢٬٧٠٠ د.أ';
-    var inv=load('tanfeez_x_invoices',[]); inv.push({client:'شركة الياسمين العقارية',type:'مطالبة مرحلية',value:total,creator:(session&&session.name)||'—'}); save('tanfeez_x_invoices',inv);
-    var w=window.open('','_blank'); w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>فاتورة</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — مطالبة مالية</h1><p><b>العميل:</b> شركة الياسمين العقارية</p><p><b>المشروع:</b> برج الياسمين</p><p><b>التاريخ:</b> '+new Date().toLocaleDateString('ar-EG')+'</p><hr><p style="font-size:20px"><b>إجمالي المطالبة: '+total+'</b></p></body></html>'); w.document.close(); w.print();
-    toast('تم إنشاء الفاتورة وإضافتها لصفحة الفواتير');
-  });
+  // ---------- Project finance: unified works (our invoice + subcontractor accounting) ----------
+  if(document.getElementById('works-body')){
+    var pN=(document.querySelector('.page-head h1')&&document.querySelector('.page-head h1').textContent.trim())||'المشروع';
+    var WK='tanfeez_works_v1';
+    function pNum(s){ if(s==null)return 0; var x=String(s).replace(/[٠-٩]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'.indexOf(d);}).replace(/[^\d.]/g,''); return parseFloat(x)||0; }
+    function fmt(n){ return Math.round(n).toLocaleString('ar-EG')+' د.أ'; }
+    function sT(id,t){ var e=document.getElementById(id); if(e)e.textContent=t; }
+    var workFields=[{l:'وصف العمل',n:'desc',t:'text',optional:true},{l:'الكمية المنجزة',n:'qty',t:'text',optional:true},{l:'الوحدة',n:'unit',t:'select',o:['—','متر','متر مربع','قطعة','مقطوعية']},{l:'سعرنا على فاتورة العميل (د.أ)',n:'our_price',t:'text',optional:true},{l:'المقاول الفرعي',n:'subcontractor',t:'text',optional:true},{l:'أجور المقاول المتفق عليها (د.أ)',n:'sub_price',t:'text',optional:true}];
+    var works=load(WK,[{desc:'أعمال تكييف منجزة',qty:'٧٢٪',unit:'مقطوعية',our_price:'٢٤٢٠٠',subcontractor:'',sub_price:''},{desc:'عزل حراري للدكت',qty:'٢٩٠',unit:'متر مربع',our_price:'٤٠٠٠',subcontractor:'مؤسسة النور للعزل',sub_price:'٢٣٢٠'},{desc:'تصنيع دكت',qty:'٣٠٠',unit:'متر مربع',our_price:'٥٥٠٠',subcontractor:'ورشة الحداد',sub_price:'٣٦٠٠'},{desc:'توصيلات نحاس',qty:'٥٠٠',unit:'متر',our_price:'٣٠٠٠',subcontractor:'فني تمديدات',sub_price:'١٥٠٠'}]);
+    function recompute(){
+      var ourT=works.reduce(function(s,w){return s+pNum(w.our_price);},0), subT=works.reduce(function(s,w){return s+pNum(w.sub_price);},0);
+      sT('sum-ourinvoice',fmt(ourT)); sT('sum-projvalue',fmt(ourT)); sT('sum-subdues',fmt(subT));
+      var bySub={}; works.forEach(function(w){ var c=(w.subcontractor||'').trim(); if(c&&c!=='—'){ if(!bySub[c])bySub[c]={n:0,t:0}; bySub[c].n++; bySub[c].t+=pNum(w.sub_price); } });
+      var ks=Object.keys(bySub), sb=document.getElementById('subaccounts-body');
+      if(sb)sb.innerHTML=ks.length?ks.map(function(k){return '<tr><td>'+esc(k)+'</td><td>'+bySub[k].n+' عمل</td><td><b>'+fmt(bySub[k].t)+'</b></td></tr>';}).join(''):'<tr><td colspan="3" style="text-align:center;color:var(--faint)">ما في مقاولين بعد</td></tr>';
+    }
+    function renderWorks(){
+      save(WK,works);
+      var b=document.getElementById('works-body');
+      b.innerHTML=works.length?works.map(function(w,i){return '<tr><td>'+(w.desc?esc(w.desc):'—')+'</td><td>'+(w.qty?esc(w.qty):'—')+'</td><td>'+(w.unit&&w.unit!=='—'?esc(w.unit):'—')+'</td><td>'+(w.our_price?esc(w.our_price):'<span style="color:var(--faint)">— املأها</span>')+'</td><td>'+(w.subcontractor?esc(w.subcontractor):'—')+'</td><td>'+(w.sub_price?esc(w.sub_price):'—')+'</td><td><div class="row-actions"><button class="btn-mini crud-edit" data-i="'+i+'">تعديل</button><button class="btn-mini danger crud-del" data-i="'+i+'">حذف</button></div></td></tr>';}).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--faint)">ما في أعمال بعد — اضغط "إضافة عمل"</td></tr>';
+      b.querySelectorAll('.crud-del').forEach(function(x){x.addEventListener('click',function(){works.splice(+x.getAttribute('data-i'),1);renderWorks();toast('تم الحذف');});});
+      b.querySelectorAll('.crud-edit').forEach(function(x){x.addEventListener('click',function(){var i=+x.getAttribute('data-i');modal('تعديل عمل','',workFields,function(v){works[i]=v;renderWorks();toast('تم التعديل');},works[i]);});});
+      recompute();
+    }
+    renderWorks();
+    var aw=document.getElementById('add-work'); if(aw)aw.addEventListener('click',function(){ modal('إضافة عمل منجز','أدخل العمل وسعرنا للعميل والمقاول وأجوره — ثم احفظ للترحيل',workFields,function(v){ works.push(v); renderWorks(); toast('تم الترحيل ✓ — تحدّثت فاتورتنا وحساب المقاول'); }); });
+    var mi2=document.getElementById('make-invoice'); if(mi2)mi2.addEventListener('click',function(){ var total=works.reduce(function(s,w){return s+pNum(w.our_price);},0); var inv=load('tanfeez_x_invoices',[]); inv.push({client:'شركة الياسمين العقارية',type:'مطالبة مرحلية',value:fmt(total),creator:(session&&session.name)||'—'}); save('tanfeez_x_invoices',inv); var rws=works.filter(function(w){return pNum(w.our_price)>0;}).map(function(w){return '<tr><td>'+(w.desc||'')+'</td><td>'+(w.qty||'')+'</td><td>'+(w.our_price||'')+'</td></tr>';}).join(''); var w=window.open('','_blank'); w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>فاتورة</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — مطالبة مالية للعميل</h1><h3>'+esc(pN)+' · '+new Date().toLocaleDateString('ar-EG')+'</h3><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;text-align:right"><tr style="background:#F4FBFB"><th>وصف العمل</th><th>الكمية</th><th>القيمة</th></tr>'+rws+'</table><h2 style="text-align:left">الإجمالي: '+fmt(total)+'</h2></body></html>'); w.document.close(); w.print(); toast('تم إنشاء الفاتورة وإضافتها لصفحة الفواتير'); });
+    var ss=document.getElementById('sub-statement'); if(ss)ss.addEventListener('click',function(){ var bySub={}; works.forEach(function(w){var c=(w.subcontractor||'').trim(); if(c&&c!=='—'){if(!bySub[c])bySub[c]=[];bySub[c].push(w);}}); var html=''; Object.keys(bySub).forEach(function(k){ var tot=bySub[k].reduce(function(s,w){return s+pNum(w.sub_price);},0); html+='<h2 style="color:#0E8A94">'+esc(k)+'</h2><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;text-align:right;margin-bottom:16px"><tr style="background:#F4FBFB"><th>العمل</th><th>الكمية</th><th>الأجور</th></tr>'+bySub[k].map(function(w){return '<tr><td>'+(w.desc||'')+'</td><td>'+(w.qty||'')+'</td><td>'+(w.sub_price||'')+'</td></tr>';}).join('')+'<tr><td colspan="2"><b>الإجمالي المستحق</b></td><td><b>'+fmt(tot)+'</b></td></tr></table>'; }); var w=window.open('','_blank'); w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>كشف حساب المقاولين</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — كشف حساب المقاولين الفرعيين</h1><h3>'+esc(pN)+' · '+new Date().toLocaleDateString('ar-EG')+'</h3>'+(html||'<p>لا يوجد مقاولون</p>')+'</body></html>'); w.document.close(); w.print(); toast('تم تجهيز كشف حساب المقاولين'); });
+  }
 
   // ---------- Project: create report ----------
   var addReport=document.getElementById('add-report');
