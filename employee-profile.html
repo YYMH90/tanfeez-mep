@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>المهام — TANFEEZ.MEP</title>
+  <title>ملف الموظف — TANFEEZ.MEP</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css" />
@@ -16,7 +16,7 @@
       <nav class="nav">
         <a href="index.html"><i class="ti ti-layout-dashboard"></i> لوحة التحكّم</a>
         <a href="projects.html"><i class="ti ti-building-community"></i> المشاريع</a>
-        <a href="tasks.html" class="active"><i class="ti ti-checklist"></i> المهام</a>
+        <a href="tasks.html"><i class="ti ti-checklist"></i> المهام</a>
         <a href="purchase-requests.html"><i class="ti ti-shopping-cart"></i> طلبات الشراء</a>
         <a href="invoices.html"><i class="ti ti-file-invoice"></i> الفواتير</a>
         <a href="finance.html"><i class="ti ti-lock"></i> المالية</a>
@@ -39,8 +39,12 @@
         </div>
       </header>
       <div class="content">
-        <div class="page-head"><div><h1>المهام</h1><p class="sub">قوائم مهام مشتركة بينك وبين كل عضو — زي Microsoft To Do</p></div></div>
-        <div class="todo-layout"><div class="people-list" id="people-list"></div><div class="todo-panel" id="todo-panel"></div></div>
+        <div class="profile-head"><div class="big-av" id="emp-av" style="background:#0E8A94">·</div><div><h1 id="emp-name">—</h1><p id="emp-role">موظف</p></div><a class="btn-mini" href="team.html" style="margin-inline-start:auto"><i class="ti ti-arrow-right"></i> رجوع للفريق</a></div>
+        <div class="metric-grid"><div class="metric"><div class="label">أيام الدوام (الشهر)</div><div class="val teal">٢٤</div></div><div class="metric"><div class="label">إجازات</div><div class="val">٢</div></div><div class="metric"><div class="label">مرات التأخير</div><div class="val warn">٣</div></div><div class="metric"><div class="label">غياب</div><div class="val danger">١</div></div></div>
+        <div class="section-title"><h2><i class="ti ti-cash" style="font-size:18px;vertical-align:-3px;color:var(--warn)"></i> السلف</h2><button class="btn-add" id="add-advance"><i class="ti ti-plus"></i> إضافة سلفة</button></div>
+        <div class="tbl-wrap" style="margin-bottom:20px"><table class="tbl"><thead><tr><th>التاريخ</th><th>المبلغ (د.أ)</th><th>ملاحظة</th><th></th></tr></thead><tbody id="advances-body"></tbody></table></div>
+        <div class="section-title"><h2><i class="ti ti-note" style="font-size:18px;vertical-align:-3px;color:var(--teal-deep)"></i> ملاحظات (للتقييم السنوي)</h2><button class="btn-add" id="add-note"><i class="ti ti-plus"></i> إضافة ملاحظة</button></div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>الملاحظة</th><th>التقييم</th><th></th></tr></thead><tbody id="notes-body"></tbody></table></div>
       </div>
     </main>
   </div>

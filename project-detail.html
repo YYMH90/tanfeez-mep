@@ -15,7 +15,7 @@
       <div class="brand"><div class="logo"><img src="assets/logo.jpg" alt="TANFEEZ.MEP" /></div></div>
       <nav class="nav">
         <a href="index.html"><i class="ti ti-layout-dashboard"></i> لوحة التحكّم</a>
-        <a href="projects.html" class="active"><i class="ti ti-building-community"></i> المشاريع</a>
+        <a href="projects.html"><i class="ti ti-building-community"></i> المشاريع</a>
         <a href="tasks.html"><i class="ti ti-checklist"></i> المهام</a>
         <a href="purchase-requests.html"><i class="ti ti-shopping-cart"></i> طلبات الشراء</a>
         <a href="invoices.html"><i class="ti ti-file-invoice"></i> الفواتير</a>
@@ -31,29 +31,31 @@
         <div class="logo" style="height:38px"><img src="assets/logo.jpg" alt="TANFEEZ.MEP" style="height:38px" /></div>
         <div class="right">
           <svg class="flag" viewBox="0 0 30 20" width="24" height="16" aria-label="علم الأردن"><rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#000"/><rect width="30" height="6.66" y="13.34" fill="#007a3d"/><polygon points="0,0 15,10 0,20" fill="#ce1126"/><circle cx="4.6" cy="10" r="1.5" fill="#fff"/></svg>
-          <button class="icon-btn" aria-label="الإشعارات"><i class="ti ti-bell"></i><span class="badge-dot">3</span></button>
+          <div class="notif-wrap">
+            <button class="icon-btn" id="bell" aria-label="الإشعارات"><i class="ti ti-bell"></i><span class="badge-dot" id="bell-count">3</span></button>
+            <div class="notif-panel" id="notif-panel"></div>
+          </div>
           <div class="avatar" title="م. يزن حمّاد">يح</div>
         </div>
       </header>
       <div class="content">
-        <div class="page-head"><div><h1>برج الياسمين</h1><p class="sub">تكييف مركزي · عمّان — الياسمين</p></div><span class="pill"><span class="status status-active">جاري</span></span></div>
-        <div class="kv">
-          <div><div class="k">العميل</div><div class="v">شركة الياسمين العقارية</div></div>
-          <div><div class="k">المهندس المسؤول</div><div class="v">م. أحمد</div></div>
-          <div><div class="k">عدد البنود</div><div class="v">34 بند</div></div>
-          <div><div class="k">الإنجاز (مرجّح بالقيمة)</div><div class="v" style="color:var(--teal-deep)">72%</div></div>
+        <div class="page-head"><div><h1>برج الياسمين</h1><p class="sub">تكييف مركزي · عمّان — الياسمين</p></div><span class="status status-active">جاري</span></div>
+        <div class="kv"><div><div class="k">العميل</div><div class="v">شركة الياسمين العقارية</div></div><div><div class="k">المهندس المسؤول</div><div class="v">م. أحمد</div></div><div><div class="k">عدد البنود</div><div class="v">34 بند</div></div><div><div class="k">الإنجاز (مرجّح بالقيمة)</div><div class="v" style="color:var(--teal-deep)">72%</div></div></div>
+        <div class="tabs" id="pd-tabs"><a class="active" data-tab="boq">بنود BOQ</a><a data-tab="materials">المواد</a><a data-tab="reports">التقارير</a><a data-tab="finance">المالية</a></div>
+        <div class="tab-panel active" id="tab-boq"><div class="tbl-wrap"><table class="tbl"><thead><tr><th>البند</th><th>الوحدة</th><th>الكمية المخططة</th><th>المنجز</th><th>التقدّم</th><th>%</th></tr></thead><tbody><tr><td>توريد وتركيب وحدات Split</td><td>عدد</td><td>18</td><td>13</td><td><div class='bar' style='width:120px'><span style='width:72%'></span></div></td><td>72%</td></tr><tr><td>دكت تكييف مجلفن</td><td>م²</td><td>420</td><td>300</td><td><div class='bar' style='width:120px'><span style='width:71%'></span></div></td><td>71%</td></tr><tr><td>عوازل حرارية للدكت</td><td>م²</td><td>420</td><td>290</td><td><div class='bar' style='width:120px'><span style='width:69%'></span></div></td><td>69%</td></tr><tr><td>توصيلات نحاس وتمديدات</td><td>م.ط</td><td>650</td><td>500</td><td><div class='bar' style='width:120px'><span style='width:77%'></span></div></td><td>77%</td></tr><tr><td>لوحات تحكّم وثرموستات</td><td>عدد</td><td>12</td><td>8</td><td><div class='bar' style='width:120px'><span style='width:67%'></span></div></td><td>67%</td></tr></tbody></table></div></div>
+        <div class="tab-panel" id="tab-materials">
+          <div class="metric-grid"><div class="metric"><div class="label">مواد مشتراة</div><div class="val">١٢ صنف</div></div><div class="metric"><div class="label">مستخدمة بالموقع</div><div class="val teal">٩ أصناف</div></div><div class="metric"><div class="label">متبقية بالمستودع</div><div class="val">٣ أصناف</div></div><div class="metric"><div class="label">هدر مسجّل</div><div class="val warn">٢%</div></div></div>
+          <div class="section-title"><h2>كتالوج مواد المشروع</h2><button class="btn-add" id="add-material"><i class="ti ti-plus"></i> إضافة مادة</button></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>المادة</th><th>الوحدة</th><th>مشتراة</th><th>مستخدمة</th><th>متبقية</th></tr></thead><tbody id="materials-body"><tr><td>نحاس وتمديدات</td><td>م.ط</td><td>٦٥٠</td><td>٥٠٠</td><td>١٥٠</td></tr><tr><td>دكت مجلفن</td><td>م²</td><td>٤٢٠</td><td>٣٠٠</td><td>١٢٠</td></tr><tr><td>عوازل حرارية</td><td>م²</td><td>٤٢٠</td><td>٢٩٠</td><td>١٣٠</td></tr></tbody></table></div>
         </div>
-        <div class="tabs"><a class="active">بنود BOQ</a><a href="#materials">المواد</a><a href="reports.html">التقارير</a><a href="finance.html">المالية</a></div>
-        <div class="tbl-wrap" style="margin-bottom:18px">
-          <table class="tbl"><thead><tr><th>البند</th><th>الوحدة</th><th>الكمية المخططة</th><th>المنجز</th><th>التقدّم</th><th>%</th></tr></thead>
-          <tbody><tr><td>توريد وتركيب وحدات Split</td><td>عدد</td><td>18</td><td>13</td><td><div class='bar' style='width:120px'><span style='width:72%'></span></div></td><td>72%</td></tr><tr><td>دكت تكييف مجلفن</td><td>م²</td><td>420</td><td>300</td><td><div class='bar' style='width:120px'><span style='width:71%'></span></div></td><td>71%</td></tr><tr><td>عوازل حرارية للدكت</td><td>م²</td><td>420</td><td>290</td><td><div class='bar' style='width:120px'><span style='width:69%'></span></div></td><td>69%</td></tr><tr><td>توصيلات نحاس وتمديدات</td><td>م.ط</td><td>650</td><td>500</td><td><div class='bar' style='width:120px'><span style='width:77%'></span></div></td><td>77%</td></tr><tr><td>لوحات تحكّم وثرموستات</td><td>عدد</td><td>12</td><td>8</td><td><div class='bar' style='width:120px'><span style='width:67%'></span></div></td><td>67%</td></tr></tbody></table>
-        </div>
-        <div class="section-title" id="materials"><h2>ملخّص المواد</h2></div>
-        <div class="metric-grid">
-          <div class="metric"><div class="label">مواد مشتراة</div><div class="val">١٢ صنف</div></div>
-          <div class="metric"><div class="label">مستخدمة بالموقع</div><div class="val teal">٩ أصناف</div></div>
-          <div class="metric"><div class="label">متبقية بالمستودع</div><div class="val">٣ أصناف</div></div>
-          <div class="metric"><div class="label">هدر مسجّل</div><div class="val warn">٢%</div></div>
+        <div class="tab-panel" id="tab-reports"><div class="card"><p style="margin:0 0 10px">آخر التقارير المرفوعة لهذا المشروع:</p><div class="row"><span>تقرير يومي · ١٨ حزيران · م. أحمد</span><span class="tag tag-teal">أُرسل للعميل</span></div><div class="row"><span>تقرير يومي · ١٧ حزيران · م. أحمد</span><span class="tag tag-warn">لم يُرسل</span></div><div style="margin-top:12px"><a class="link" href="reports.html">كل التقارير ›</a></div></div></div>
+        <div class="tab-panel" id="tab-finance">
+          <div class="section-title"><h2><i class="ti ti-package" style="font-size:18px;vertical-align:-3px;color:var(--teal-deep)"></i> 1 · حركة المواد للمشروع</h2></div>
+          <div class="tbl-wrap" style="margin-bottom:18px"><table class="tbl"><thead><tr><th>المادة</th><th>شراء</th><th>استعمال</th><th>إرجاع</th><th>هدر</th></tr></thead><tbody><tr><td>نحاس وتمديدات</td><td>٦٥٠ م.ط</td><td>٥٠٠ م.ط</td><td>٣٠ م.ط</td><td>٢٠ م.ط</td></tr><tr><td>دكت مجلفن</td><td>٤٢٠ م²</td><td>٣٠٠ م²</td><td>٠</td><td>١٠ م²</td></tr><tr><td>عوازل حرارية</td><td>٤٢٠ م²</td><td>٢٩٠ م²</td><td>١٥ م²</td><td>٥ م²</td></tr><tr><td>وحدات Split</td><td>١٨ عدد</td><td>١٣ عدد</td><td>٠</td><td>٠</td></tr></tbody></table></div>
+          <div class="section-title"><h2><i class="ti ti-users" style="font-size:18px;vertical-align:-3px;color:var(--warn)"></i> 2 · المقاولون الفرعيون ومطالباتهم</h2></div>
+          <div class="tbl-wrap" style="margin-bottom:18px"><table class="tbl"><thead><tr><th>المقاول</th><th>العمل</th><th>الكمية المنجزة</th><th>المستحق</th><th>الحالة</th></tr></thead><tbody><tr><td>مؤسسة النور للعزل</td><td>عزل حراري للدكت</td><td>٢٩٠ م²</td><td>٢٬٣٢٠ د.أ</td><td><span class='tag tag-warn'>بانتظار الدفع</span></td></tr><tr><td>ورشة الحداد</td><td>تصنيع دكت</td><td>٣٠٠ م²</td><td>٣٬٦٠٠ د.أ</td><td><span class='tag tag-teal'>مدفوع جزئي</span></td></tr><tr><td>فني تمديدات</td><td>توصيلات نحاس</td><td>٥٠٠ م.ط</td><td>١٬٥٠٠ د.أ</td><td><span class='tag tag-warn'>بانتظار الدفع</span></td></tr></tbody></table></div>
+          <div class="section-title"><h2><i class="ti ti-receipt" style="font-size:18px;vertical-align:-3px;color:var(--teal-deep)"></i> 3 · مطالبتنا المالية (أعمال + مواد منجزة)</h2></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>البند</th><th>نسبة الإنجاز</th><th>قيمة الأعمال</th><th>قيمة المواد</th><th>الإجمالي</th></tr></thead><tbody><tr><td>أعمال تكييف منجزة</td><td>٧٢%</td><td>١٨٬٠٠٠ د.أ</td><td>٦٬٢٠٠ د.أ</td><td><b>٢٤٬٢٠٠ د.أ</b></td></tr><tr><td>أعمال دكت وعزل</td><td>٧٠%</td><td>٨٬٤٠٠ د.أ</td><td>٣٬١٠٠ د.أ</td><td><b>١١٬٥٠٠ د.أ</b></td></tr><tr><td>توصيلات نحاس</td><td>٧٧%</td><td>٤٬٦٠٠ د.أ</td><td>٢٬٤٠٠ د.أ</td><td><b>٧٬٠٠٠ د.أ</b></td></tr></tbody><tfoot><tr><td colspan="4" style="text-align:left;font-weight:500;padding:12px 16px;border-top:0.5px solid var(--line)">إجمالي مطالبتنا</td><td style="font-weight:500;color:var(--teal-deep);border-top:0.5px solid var(--line)">٤٢٬٧٠٠ د.أ</td></tr></tfoot></table></div>
         </div>
       </div>
     </main>
