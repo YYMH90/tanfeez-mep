@@ -14,6 +14,50 @@
   var toastEl;
   function toast(msg){ if(!toastEl){toastEl=document.createElement('div');toastEl.className='toast';document.body.appendChild(toastEl);} toastEl.innerHTML='<i class="ti ti-info-circle"></i>'+esc(msg); toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(function(){toastEl.classList.remove('show');},2800); }
 
+  // ---------- AUTH (demo, client-side only — NOT real security) ----------
+  var USERS=[
+    {u:'yazan',p:'tanfeez2025',name:'م. يزن حمّاد',role:'المدير'},
+    {u:'ahmad',p:'ahmad2025',name:'م. أحمد',role:'مهندس موقع'},
+    {u:'khaled',p:'khaled2025',name:'م. خالد',role:'مهندس موقع'},
+    {u:'sami',p:'sami2025',name:'م. سامي',role:'مهندس موقع'},
+    {u:'mahmoud',p:'mahmoud2025',name:'محمود',role:'المحاسب'},
+    {u:'noor',p:'noor2025',name:'نور',role:'موظف مكتب'},
+    {u:'abdullah',p:'abdullah2025',name:'عبدالله',role:'فني'}
+  ];
+  var SKEY='tanfeez_session', session=null;
+  try{ session=JSON.parse(localStorage.getItem(SKEY)); }catch(e){}
+  var loginForm=document.getElementById('login-form');
+  if(loginForm){
+    loginForm.addEventListener('submit',function(e){ e.preventDefault();
+      var u=(document.getElementById('username').value||'').trim().toLowerCase(), p=document.getElementById('password').value||'';
+      var f=USERS.filter(function(x){return x.u===u && x.p===p;})[0];
+      if(f){ localStorage.setItem(SKEY,JSON.stringify({u:f.u,name:f.name,role:f.role})); location.href='index.html'; }
+      else { var er=document.getElementById('login-err'); if(er)er.style.display='block'; }
+    });
+    return;
+  }
+  if(!session){ location.replace('login.html'); return; }
+  (function(){
+    var av=document.querySelector('.topbar .avatar'); if(av){ av.textContent=initials(session.name); av.title=session.name+' · '+session.role; }
+    var ALLOWED={
+      'مهندس موقع':['index.html','projects.html','project-detail.html','tasks.html','purchase-requests.html','reports.html'],
+      'مهندس مكتب':['index.html','projects.html','project-detail.html','tasks.html','purchase-requests.html','reports.html'],
+      'المحاسب':['index.html','invoices.html','finance.html','clients.html','client-profile.html','tasks.html'],
+      'موظف مكتب':['index.html','tasks.html','reports.html','purchase-requests.html'],
+      'فني':['index.html','tasks.html','reports.html']
+    };
+    var allow=ALLOWED[session.role];
+    var page=(location.pathname.split('/').pop()||'index.html'); if(!page)page='index.html';
+    if(allow){
+      document.querySelectorAll('.sidebar .nav a').forEach(function(a){ if(allow.indexOf(a.getAttribute('href'))===-1) a.style.display='none'; });
+      if(allow.indexOf(page)===-1){ location.replace('index.html'); return; }
+      var fin=document.getElementById('finance'); if(fin)fin.style.display='none';
+      var al=document.querySelector('.content .alert'); if(al)al.style.display='none';
+      var ap=document.querySelector('.grid-2 .card'); if(ap)ap.style.display='none';
+      if(page==='index.html'){ var sub=document.querySelector('.page-head .sub'); if(sub)sub.textContent='أهلاً '+session.name+' ('+session.role+') — هذه واجهتك'; }
+    }
+  })();
+
   function modal(title,sub,fields,onSubmit){
     var ov=document.createElement('div'); ov.className='modal-overlay';
     var body=fields.map(function(f){
@@ -100,7 +144,9 @@
   // ---------- Tasks (Microsoft To Do style) ----------
   var peopleList=document.getElementById('people-list'), todoPanel=document.getElementById('todo-panel');
   if(peopleList&&todoPanel){
-    var people=load(TEAM_KEY,teamSeed).filter(function(m){return m.role!=='المدير';});
+    var allPeople=load(TEAM_KEY,teamSeed).filter(function(m){return m.role!=='المدير';});
+    var people=(session&&session.role!=='المدير')?allPeople.filter(function(m){return m.name===session.name;}):allPeople;
+    if(!people.length)people=[{name:session.name,role:session.role}];
     var current=people[0];
     function todoKey(name){return 'tanfeez_todo_'+name;}
     function renderPeople(){
@@ -270,7 +316,7 @@
 
   // ---------- avatar logout ----------
   var avatar=document.querySelector('.topbar .avatar');
-  if(avatar){ avatar.classList.add('clickable'); avatar.addEventListener('click',function(){ if(confirm('تسجيل الخروج؟'))window.location.href='login.html'; }); }
+  if(avatar){ avatar.classList.add('clickable'); avatar.addEventListener('click',function(){ if(confirm('تسجيل الخروج؟')){ localStorage.removeItem(SKEY); window.location.href='login.html'; } }); }
 
   // ---------- finance reveal (dashboard) ----------
   var card=document.getElementById('finance'), toggle=document.getElementById('finance-toggle'), figures=document.getElementById('finance-figures');
