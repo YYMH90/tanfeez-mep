@@ -84,6 +84,40 @@
     ov.querySelector('form').addEventListener('submit',function(e){e.preventDefault();var d=new FormData(e.target),o={};fields.forEach(function(f){o[f.n]=(d.get(f.n)||'').toString().trim();});onSubmit(o);close();});
   }
 
+  // ---------- batch add modal (multiple بنود before saving) ----------
+  function batchModal(title,sub,fields,onSave){
+    var pending=[];
+    var ov=document.createElement('div'); ov.className='modal-overlay open';
+    var body=fields.map(function(f){
+      if(f.t==='select') return '<div class="field"><label>'+f.l+'</label><select name="'+f.n+'">'+f.o.map(function(v){return '<option>'+esc(v)+'</option>';}).join('')+'</select></div>';
+      return '<div class="field"><label>'+f.l+'</label><input name="'+f.n+'" type="'+f.t+'" /></div>';
+    }).join('');
+    ov.innerHTML='<div class="modal"><h3>'+esc(title)+'</h3><p class="msub">'+esc(sub)+'</p><form id="bm-form">'+body+'</form><div id="bm-pending" style="font-size:13px;color:var(--teal-deep);margin:4px 0 2px"></div><div class="actions" style="flex-wrap:wrap"><button type="button" class="btn-mini" id="bm-add" style="padding:9px 14px"><i class="ti ti-plus"></i> إضافة بند آخر</button><button type="button" class="btn-primary" id="bm-save" style="margin-top:0">حفظ الكل</button><button type="button" class="btn-cancel" id="bm-cancel">إلغاء</button></div></div>';
+    document.body.appendChild(ov);
+    function readForm(){ var fm=document.getElementById('bm-form'),o={},any=false; fields.forEach(function(f){var el=fm.querySelector('[name="'+f.n+'"]'); var v=el?el.value.trim():''; o[f.n]=v; if(v&&v!=='—')any=true;}); return any?o:null; }
+    function clearForm(){ var fm=document.getElementById('bm-form'); fields.forEach(function(f){var el=fm.querySelector('[name="'+f.n+'"]'); if(el)el.value=(f.t==='select'?f.o[0]:'');}); var f0=fm.querySelector('[name="'+fields[0].n+'"]'); if(f0)f0.focus(); }
+    function upd(){ document.getElementById('bm-pending').textContent=pending.length?('بنود جاهزة للحفظ: '+pending.length):''; }
+    function close(){ ov.remove(); }
+    ov.querySelector('#bm-add').addEventListener('click',function(){ var o=readForm(); if(o){pending.push(o);clearForm();upd();toast('انضاف بند ('+pending.length+') — كمّل أو احفظ');} else toast('املأ البند الأول'); });
+    ov.querySelector('#bm-save').addEventListener('click',function(){ var o=readForm(); if(o)pending.push(o); if(pending.length){onSave(pending);} close(); });
+    ov.querySelector('#bm-cancel').addEventListener('click',close);
+    ov.addEventListener('click',function(e){if(e.target===ov)close();});
+  }
+
+  // ---------- export helpers (Excel / PDF / OneDrive) ----------
+  function downloadCSV(name,rows){ var csv='﻿'+rows.map(function(r){return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(',');}).join('\n'); var b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name+'.csv'; document.body.appendChild(a); a.click(); a.remove(); }
+  function exportChooser(title,printHtml,csvRows){
+    var ov=document.createElement('div'); ov.className='modal-overlay open';
+    ov.innerHTML='<div class="modal"><h3>'+esc(title)+'</h3><p class="msub">اختر صيغة التصدير</p><div style="display:flex;flex-direction:column;gap:10px"><button class="btn-primary" id="ex-pdf" style="margin-top:0"><i class="ti ti-file-type-pdf"></i> PDF (طباعة / حفظ PDF)</button><button class="btn-add" id="ex-xls" style="justify-content:center;background:#1D9E75"><i class="ti ti-file-spreadsheet"></i> Excel</button><button class="btn-add" id="ex-od" style="justify-content:center;background:#185FA5"><i class="ti ti-brand-onedrive"></i> حفظ على OneDrive</button><button class="btn-cancel" id="ex-x">إغلاق</button></div></div>';
+    document.body.appendChild(ov);
+    function close(){ov.remove();}
+    ov.addEventListener('click',function(e){if(e.target===ov)close();});
+    ov.querySelector('#ex-x').addEventListener('click',close);
+    ov.querySelector('#ex-pdf').addEventListener('click',function(){ var w=window.open('','_blank'); w.document.write(printHtml()); w.document.close(); w.print(); close(); });
+    ov.querySelector('#ex-xls').addEventListener('click',function(){ downloadCSV(title,csvRows()); toast('تم تنزيل ملف Excel'); close(); });
+    ov.querySelector('#ex-od').addEventListener('click',function(){ toast('بيتحفظ على OneDrive مع الـ Backend'); close(); });
+  }
+
   // ---------- shared seeds ----------
   var TEAM_KEY='tanfeez_team_v1';
   var teamSeed=[
@@ -280,7 +314,7 @@
       body.querySelectorAll('.crud-edit').forEach(function(b){b.addEventListener('click',function(){var i=+b.getAttribute('data-i');modal(o.title,'تعديل',o.fields,function(v){data[i]=v;r();toast('تم التعديل');},data[i]);});});
     }
     r();
-    var add=document.getElementById(o.addBtn); if(add)add.addEventListener('click',function(){modal(o.title,o.sub||'',o.fields,function(v){data.push(v);r();toast('تمت الإضافة ✓');});});
+    var add=document.getElementById(o.addBtn); if(add)add.addEventListener('click',function(){ if(o.batch){ batchModal(o.title,o.sub||'يمكنك إدخال عدة بنود ثم حفظها مرة وحدة',o.fields,function(arr){arr.forEach(function(v){data.push(v);});r();toast('تمت إضافة '+arr.length+' بند ✓');}); } else { modal(o.title,o.sub||'',o.fields,function(v){data.push(v);r();toast('تمت الإضافة ✓');}); } });
     return {get:function(){return data;}};
   }
 
@@ -288,7 +322,7 @@
   if(document.getElementById('matmove-body')){
     function mvType(t){ if(!t||t==='—')return '—'; var c={'استلام':'tag-teal','استخدام':'tag-warn','هدر':'tag-danger'}[t]; if(t==='إرجاع')return '<span class="tag" style="background:#EAEFEF;color:#5F6B6B">إرجاع</span>'; return '<span class="tag '+(c||'tag-teal')+'">'+esc(t)+'</span>'; }
     function cln(v){ return (v&&v!=='—')?esc(v):'—'; }
-    var mm=crudTable({ bodyId:'matmove-body', addBtn:'add-matmove', key:'tanfeez_matmove_v2', title:'حركة مادة',
+    var mm=crudTable({ bodyId:'matmove-body', addBtn:'add-matmove', key:'tanfeez_matmove_v2', title:'حركة مادة', batch:true,
       fields:[{l:'المادة',n:'material',t:'text',optional:true},{l:'القياس',n:'size',t:'text',optional:true},{l:'العدد',n:'qty',t:'text',optional:true},{l:'الوحدة',n:'unit',t:'select',o:['—','متر','متر مربع','قطعة']},{l:'نوع الحركة',n:'type',t:'select',o:['—','استلام','استخدام','إرجاع','هدر']}],
       seed:[{material:'كوع نحاس',size:'3/4',qty:'٦٥٠',unit:'متر',type:'استلام'},{material:'كوع نحاس',size:'3/4',qty:'٥٠٠',unit:'متر',type:'استخدام'},{material:'دكت مجلفن',size:'',qty:'٤٢٠',unit:'متر مربع',type:'استلام'},{material:'عوازل حرارية',size:'',qty:'٢٩٠',unit:'متر مربع',type:'استخدام'},{material:'وحدات Split',size:'',qty:'١٨',unit:'قطعة',type:'استلام'}],
       row:function(it,i){return '<tr><td>'+cln(it.material)+'</td><td>'+cln(it.size)+'</td><td>'+cln(it.qty)+'</td><td>'+cln(it.unit)+'</td><td>'+mvType(it.type)+'</td><td><div class="row-actions"><button class="btn-mini crud-edit" data-i="'+i+'">تعديل</button><button class="btn-mini danger crud-del" data-i="'+i+'">حذف</button></div></td></tr>';}
@@ -335,9 +369,11 @@
       recompute();
     }
     renderWorks();
-    var aw=document.getElementById('add-work'); if(aw)aw.addEventListener('click',function(){ modal('إضافة عمل منجز','أدخل العمل وسعرنا للعميل والمقاول وأجوره — ثم احفظ للترحيل',workFields,function(v){ works.push(v); renderWorks(); toast('تم الترحيل ✓ — تحدّثت فاتورتنا وحساب المقاول'); }); });
-    var mi2=document.getElementById('make-invoice'); if(mi2)mi2.addEventListener('click',function(){ var total=works.reduce(function(s,w){return s+pNum(w.our_price);},0); var inv=load('tanfeez_x_invoices',[]); inv.push({client:'شركة الياسمين العقارية',type:'مطالبة مرحلية',value:fmt(total),creator:(session&&session.name)||'—'}); save('tanfeez_x_invoices',inv); var rws=works.filter(function(w){return pNum(w.our_price)>0;}).map(function(w){return '<tr><td>'+(w.desc||'')+'</td><td>'+(w.qty||'')+'</td><td>'+(w.our_price||'')+'</td></tr>';}).join(''); var w=window.open('','_blank'); w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>فاتورة</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — مطالبة مالية للعميل</h1><h3>'+esc(pN)+' · '+new Date().toLocaleDateString('ar-EG')+'</h3><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;text-align:right"><tr style="background:#F4FBFB"><th>وصف العمل</th><th>الكمية</th><th>القيمة</th></tr>'+rws+'</table><h2 style="text-align:left">الإجمالي: '+fmt(total)+'</h2></body></html>'); w.document.close(); w.print(); toast('تم إنشاء الفاتورة وإضافتها لصفحة الفواتير'); });
-    var ss=document.getElementById('sub-statement'); if(ss)ss.addEventListener('click',function(){ var bySub={}; works.forEach(function(w){var c=(w.subcontractor||'').trim(); if(c&&c!=='—'){if(!bySub[c])bySub[c]=[];bySub[c].push(w);}}); var html=''; Object.keys(bySub).forEach(function(k){ var tot=bySub[k].reduce(function(s,w){return s+pNum(w.sub_price);},0); html+='<h2 style="color:#0E8A94">'+esc(k)+'</h2><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;text-align:right;margin-bottom:16px"><tr style="background:#F4FBFB"><th>العمل</th><th>الكمية</th><th>الأجور</th></tr>'+bySub[k].map(function(w){return '<tr><td>'+(w.desc||'')+'</td><td>'+(w.qty||'')+'</td><td>'+(w.sub_price||'')+'</td></tr>';}).join('')+'<tr><td colspan="2"><b>الإجمالي المستحق</b></td><td><b>'+fmt(tot)+'</b></td></tr></table>'; }); var w=window.open('','_blank'); w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>كشف حساب المقاولين</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — كشف حساب المقاولين الفرعيين</h1><h3>'+esc(pN)+' · '+new Date().toLocaleDateString('ar-EG')+'</h3>'+(html||'<p>لا يوجد مقاولون</p>')+'</body></html>'); w.document.close(); w.print(); toast('تم تجهيز كشف حساب المقاولين'); });
+    var aw=document.getElementById('add-work'); if(aw)aw.addEventListener('click',function(){ batchModal('إضافة عمل منجز','أدخل العمل، اضغط "إضافة بند آخر" لمزيد، ثم احفظ الكل للترحيل',workFields,function(arr){ arr.forEach(function(v){works.push(v);}); renderWorks(); toast('تم ترحيل '+arr.length+' بند ✓ — تحدّثت فاتورتنا وحساب المقاول'); }); });
+    var mi2=document.getElementById('make-invoice'); if(mi2)mi2.addEventListener('click',function(){ var total=works.reduce(function(s,w){return s+pNum(w.our_price);},0); var inv=load('tanfeez_x_invoices',[]); inv.push({client:'شركة الياسمين العقارية',type:'مطالبة مرحلية',value:fmt(total),creator:(session&&session.name)||'—'}); save('tanfeez_x_invoices',inv); toast('تم إنشاء الفاتورة وإضافتها لصفحة الفواتير'); var items=works.filter(function(w){return pNum(w.our_price)>0;});
+      exportChooser('فاتورة العميل',function(){ var rws=items.map(function(w){return '<tr><td>'+(w.desc||'')+'</td><td>'+(w.qty||'')+'</td><td>'+(w.our_price||'')+'</td></tr>';}).join(''); return '<html dir="rtl"><head><meta charset="utf-8"><title>فاتورة</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — مطالبة مالية للعميل</h1><h3>'+esc(pN)+' · '+new Date().toLocaleDateString('ar-EG')+'</h3><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;text-align:right"><tr style="background:#F4FBFB"><th>وصف العمل</th><th>الكمية</th><th>القيمة</th></tr>'+rws+'</table><h2 style="text-align:left">الإجمالي: '+fmt(total)+'</h2></body></html>'; }, function(){ var rows=[['وصف العمل','الكمية','القيمة (د.أ)']]; items.forEach(function(w){rows.push([w.desc||'',w.qty||'',w.our_price||'']);}); rows.push(['الإجمالي','',fmt(total)]); return rows; }); });
+    var ss=document.getElementById('sub-statement'); if(ss)ss.addEventListener('click',function(){ var bySub={}; works.forEach(function(w){var c=(w.subcontractor||'').trim(); if(c&&c!=='—'){if(!bySub[c])bySub[c]=[];bySub[c].push(w);}});
+      exportChooser('كشف حساب المقاولين',function(){ var html=''; Object.keys(bySub).forEach(function(k){ var tot=bySub[k].reduce(function(s,w){return s+pNum(w.sub_price);},0); html+='<h2 style="color:#0E8A94">'+esc(k)+'</h2><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;text-align:right;margin-bottom:16px"><tr style="background:#F4FBFB"><th>العمل</th><th>الكمية</th><th>الأجور</th></tr>'+bySub[k].map(function(w){return '<tr><td>'+(w.desc||'')+'</td><td>'+(w.qty||'')+'</td><td>'+(w.sub_price||'')+'</td></tr>';}).join('')+'<tr><td colspan="2"><b>الإجمالي المستحق</b></td><td><b>'+fmt(tot)+'</b></td></tr></table>'; }); return '<html dir="rtl"><head><meta charset="utf-8"><title>كشف حساب المقاولين</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — كشف حساب المقاولين الفرعيين</h1><h3>'+esc(pN)+' · '+new Date().toLocaleDateString('ar-EG')+'</h3>'+(html||'<p>لا يوجد مقاولون</p>')+'</body></html>'; }, function(){ var rows=[['المقاول','العمل','الكمية','الأجور (د.أ)']]; Object.keys(bySub).forEach(function(k){ bySub[k].forEach(function(w){rows.push([k,w.desc||'',w.qty||'',w.sub_price||'']);}); }); return rows; }); });
   }
 
   // ---------- Project: create report ----------
@@ -355,6 +391,12 @@
     document.getElementById('emp-name').textContent=mem.name;
     document.getElementById('emp-role').textContent=mem.role;
     var av=document.getElementById('emp-av'); av.textContent=initials(mem.name); av.style.background=ROLE_COLOR[mem.role]||'#0E8A94';
+    var ah=document.querySelector('.content .profile-head');
+    if(ah){ var ab=document.createElement('div'); ab.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px'; ab.innerHTML='<button class="btn-mini" id="att-month"><i class="ti ti-calendar"></i> كشف دوام شهري</button><button class="btn-mini" id="att-year"><i class="ti ti-calendar-stats"></i> كشف دوام سنوي</button>'; ah.parentNode.insertBefore(ab, ah.nextSibling);
+      function attStmt(period){ var att=load('tanfeez_att_'+en,[]); var rows=att.map(function(a){return '<tr><td>'+(a.date||'')+'</td><td>'+(a.in||'—')+'</td><td>'+(a.out||'—')+'</td></tr>';}).join(''); var w=window.open('','_blank'); w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>كشف دوام</title></head><body style="font-family:sans-serif;padding:30px"><h1 style="color:#0E8A94">TANFEEZ.MEP — كشف دوام '+period+'</h1><h3>'+esc(en)+' · '+new Date().toLocaleDateString('ar-EG')+'</h3><p><b>عدد أيام الدوام المسجّلة:</b> '+att.length+'</p><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;text-align:right"><tr style="background:#F4FBFB"><th>التاريخ</th><th>بداية الدوام</th><th>نهاية الدوام</th></tr>'+(rows||'<tr><td colspan="3">لا يوجد سجل دوام بعد</td></tr>')+'</table></body></html>'); w.document.close(); w.print(); toast('تم تجهيز كشف الدوام ال'+period); }
+      document.getElementById('att-month').addEventListener('click',function(){attStmt('شهري');});
+      document.getElementById('att-year').addEventListener('click',function(){attStmt('سنوي');});
+    }
     function subList(bodyId,addId,key,fields,rowFn,title,sub){
       var b=document.getElementById(bodyId); var arr=load(key,[]);
       function r(){ save(key,arr); b.innerHTML=arr.length?arr.map(function(o,i){return rowFn(o,i);}).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--faint)">ما في سجلات بعد</td></tr>'; b.querySelectorAll('.del-btn').forEach(function(d){d.addEventListener('click',function(){arr.splice(+d.dataset.i,1);r();toast('تم الحذف');});}); }
@@ -375,6 +417,48 @@
     function rf(){ save(FK,arr); fb.innerHTML=arr.length?arr.map(function(o,i){return '<tr><td>'+esc(o.date)+'</td><td>'+esc(o.text)+'</td><td><button class="del-btn" data-i="'+i+'"><i class="ti ti-trash"></i></button></td></tr>';}).join(''):'<tr><td colspan="3" style="text-align:center;color:var(--faint)">ما في ملاحظات بعد</td></tr>'; fb.querySelectorAll('.del-btn').forEach(function(d){d.addEventListener('click',function(){arr.splice(+d.dataset.i,1);rf();});}); }
     rf();
     document.getElementById('add-feedback').addEventListener('click',function(){ modal('ملاحظة العميل','ملاحظة العميل علينا',[{l:'الملاحظة',n:'text',t:'text'}],function(o){o.date=new Date().toLocaleDateString('ar-EG');arr.push(o);rf();toast('تمت الإضافة ✓');}); });
+  }
+
+  // ---------- Reports: keep 2 months + save-forever ----------
+  if(pageName==='التقارير اليومية'){
+    var rinfo=document.createElement('div'); rinfo.className='alert'; rinfo.style.background='var(--teal-50)'; rinfo.style.borderInlineStartColor='var(--teal-deep)'; rinfo.style.color='var(--teal-deep)';
+    rinfo.innerHTML='<i class="ti ti-info-circle"></i><span>التقارير تُحفظ شهرين ثم تُحذف تلقائياً — اضغط "حفظ للأبد" للإبقاء عليها دائماً.</span>';
+    var tb0=document.querySelector('.toolbar'); if(tb0)tb0.parentNode.insertBefore(rinfo,tb0.nextSibling);
+    var perm=load('tanfeez_report_perm',[]);
+    document.querySelectorAll('.tbl tbody tr').forEach(function(tr){
+      var key=(tr.children[0].textContent+'|'+tr.children[1].textContent).trim();
+      var cell=tr.children[tr.children.length-1];
+      var btn=document.createElement('button'); btn.className='btn-mini'; btn.style.marginInlineStart='8px';
+      function up(){ var on=perm.indexOf(key)!==-1; btn.innerHTML=on?'<i class="ti ti-infinity"></i> محفوظ للأبد':'حفظ للأبد'; btn.style.color=on?'var(--teal-deep)':''; btn.style.borderColor=on?'var(--teal-deep)':''; }
+      up();
+      btn.addEventListener('click',function(){ var i=perm.indexOf(key); if(i===-1){perm.push(key);toast('تم الحفظ للأبد ♾️');}else{perm.splice(i,1);toast('أُلغي الحفظ الدائم');} save('tanfeez_report_perm',perm); up(); });
+      cell.appendChild(btn);
+    });
+  }
+
+  // ---------- Engineer dashboard: فزعة + attendance ----------
+  if((location.pathname.split('/').pop()||'index.html')==='index.html' && session && session.role!=='المدير' && document.querySelector('.content .page-head')){
+    var ph=document.querySelector('.content .page-head');
+    var box=document.createElement('div');
+    box.innerHTML='<div class="grid grid-2" style="margin:0 0 14px"><section class="card" style="border:1px solid #F3DBDB;background:#FBF4F4"><div class="card-head"><span class="title" style="color:#A32D2D"><i class="ti ti-alarm"></i> فزعة (طوارئ)</span></div><p style="margin:0 0 10px;font-size:13px;color:#7a2222">للحالات الطارئة فقط — تظهر فوراً عند المدير</p><button class="btn-add" id="fazaa-btn" style="background:#CE1126"><i class="ti ti-urgent"></i> أطلق فزعة</button></section><section class="card"><div class="card-head"><span class="title"><i class="ti ti-clock"></i> الدوام</span><span id="att-status" class="tag tag-warn">لم تسجّل حضور</span></div><div id="att-body"></div></section></div>';
+    ph.parentNode.insertBefore(box, ph.nextSibling);
+    document.getElementById('fazaa-btn').addEventListener('click',function(){ var what=prompt('شو الطارئ؟ (وصف سريع)'); if(what===null)return; addNotif('م. يزن حمّاد',{ico:'ti-alarm',urgent:true,text:'🚨 فزعة من '+session.name+': '+(what||'حالة طارئة عاجلة'),time:'الآن'}); toast('تم إطلاق الفزعة — وصلت للمدير 🚨'); });
+    var AK='tanfeez_att_'+session.name; var att=load(AK,[]);
+    function tKey(){return new Date().toLocaleDateString('ar-EG');}
+    function nowT(){return new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});}
+    function renderAtt(){
+      save(AK,att);
+      var today=att.filter(function(a){return a.date===tKey();})[0];
+      var st=document.getElementById('att-status'), body=document.getElementById('att-body');
+      if(today&&today.in&&!today.out){st.textContent='حاضر منذ '+today.in;st.className='tag tag-teal';}
+      else if(today&&today.out){st.textContent='انصرف '+today.out;st.className='tag';}
+      else {st.textContent='لم تسجّل حضور';st.className='tag tag-warn';}
+      body.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px"><button class="btn-add" id="att-in"'+((today&&today.in)?' disabled style="opacity:.5"':'')+'><i class="ti ti-login"></i> بداية الدوام</button><button class="btn-mini" id="att-out"'+((!today||!today.in||today.out)?' disabled style="opacity:.5"':'')+'><i class="ti ti-logout"></i> نهاية الدوام</button><button class="btn-mini" id="att-leave"><i class="ti ti-calendar-off"></i> طلب إجازة/مغادرة</button></div>';
+      var bi=document.getElementById('att-in'); if(bi&&!(today&&today.in))bi.addEventListener('click',function(){att.push({date:tKey(),in:nowT(),out:''});renderAtt();toast('سجّلت بداية الدوام');});
+      var bo=document.getElementById('att-out'); if(bo&&today&&today.in&&!today.out)bo.addEventListener('click',function(){today.out=nowT();renderAtt();toast('سجّلت نهاية الدوام');});
+      document.getElementById('att-leave').addEventListener('click',function(){var r=prompt('اكتب: إجازة أو مغادرة + السبب');if(r===null)return;addNotif('م. يزن حمّاد',{ico:'ti-calendar-off',text:'طلب من '+session.name+': '+(r||'إجازة/مغادرة'),time:'الآن'});toast('تم إرسال الطلب للمدير');});
+    }
+    renderAtt();
   }
 
   // ---------- filter chips ----------
