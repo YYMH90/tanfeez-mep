@@ -62,7 +62,7 @@
     var ov=document.createElement('div'); ov.className='modal-overlay';
     var body=fields.map(function(f){
       if(f.t==='select') return '<div class="field"><label>'+f.l+'</label><select name="'+f.n+'">'+f.o.map(function(v){return '<option value="'+esc(v.value!=null?v.value:v)+'">'+esc(v.label!=null?v.label:v)+'</option>';}).join('')+'</select></div>';
-      return '<div class="field"><label>'+f.l+'</label><input name="'+f.n+'" type="'+f.t+'" '+(f.t==='tel'?'dir="ltr"':'')+' required /></div>';
+      return '<div class="field"><label>'+f.l+'</label><input name="'+f.n+'" type="'+f.t+'" '+(f.t==='tel'?'dir="ltr"':'')+(f.optional?'':' required')+' /></div>';
     }).join('');
     ov.innerHTML='<div class="modal"><h3>'+esc(title)+'</h3><p class="msub">'+esc(sub)+'</p><form><div>'+body+'</div><div class="actions"><button type="submit" class="btn-primary">حفظ</button><button type="button" class="btn-cancel">إلغاء</button></div></form></div>';
     document.body.appendChild(ov); ov.classList.add('open');
@@ -223,9 +223,10 @@
     'التقارير اليومية':{key:'tanfeez_x_reports',container:'.tbl tbody',title:'إضافة تقرير',sub:'تقرير يومي أو أسبوعي',
       fields:[{l:'المشروع',n:'project',t:'text'},{l:'التاريخ',n:'date',t:'text'},{l:'النوع',n:'type',t:'select',o:['يومي','أسبوعي']},{l:'المهندس',n:'engineer',t:'text'}],
       el:function(o){var tr=document.createElement('tr');tr.dataset.status=o.type;tr.innerHTML='<td>'+esc(o.project)+' <span class="added-badge">جديد</span></td><td>'+esc(o.date||'—')+'</td><td>'+esc(o.type)+'</td><td>'+esc(o.engineer||'—')+'</td><td><span class="tag tag-warn">لم يُرسل</span></td><td><a class="link" href="#"><i class="ti ti-file-type-pdf"></i> PDF</a></td>';return tr;}},
-    'طلبات الشراء':{key:'tanfeez_x_pr',container:'.tbl tbody',title:'طلب شراء جديد',sub:'يُرسل للمورد بعد الموافقة',
-      fields:[{l:'المشروع',n:'project',t:'text'},{l:'اسم المورد',n:'supplier',t:'text'},{l:'المواد',n:'mats',t:'text'},{l:'القيمة',n:'value',t:'text'},{l:'مقدّم الطلب',n:'requester',t:'text'}],
-      el:function(o){var tr=document.createElement('tr');tr.dataset.status='معلّق';tr.dataset.supplier=o.supplier;tr.dataset.num='PR-جديد';tr.dataset.project=o.project;tr.innerHTML='<td>PR-جديد <span class="added-badge">جديد</span></td><td>'+esc(o.project)+'</td><td>'+esc(o.supplier)+'</td><td>'+esc(o.mats)+'</td><td>'+esc(o.value||'—')+'</td><td>'+esc(o.requester||'—')+'</td><td class="pr-action"><button class="btn-sm btn-approve">موافقة</button> <button class="btn-sm btn-reject">رفض</button></td>';return tr;}}
+    'طلبات الشراء':{key:'tanfeez_x_pr',container:'.tbl tbody',title:'طلب شراء جديد',sub:'الرقم والتاريخ ومقدّم الطلب تلقائياً',
+      fields:[{l:'المشروع',n:'project',t:'text'},{l:'اسم المورد',n:'supplier',t:'text'},{l:'اسم المادة',n:'material',t:'text'},{l:'العدد / الكمية',n:'qty',t:'text'},{l:'القيمة (د.أ)',n:'value',t:'text'},{l:'ملاحظة (اختياري)',n:'note',t:'text',optional:true}],
+      prepare:function(o){ var c=parseInt(localStorage.getItem('tanfeez_pr_counter')||'104',10)+1; localStorage.setItem('tanfeez_pr_counter',c); o.num='PR-'+c; o.date=new Date().toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long'}); o.requester=(session&&session.name)||'—'; },
+      el:function(o){var tr=document.createElement('tr');tr.dataset.status='معلّق';tr.dataset.supplier=o.supplier;tr.dataset.num=o.num;tr.dataset.project=o.project;var mats=esc(o.material)+' ('+esc(o.qty)+')'+(o.note?' — '+esc(o.note):'');tr.innerHTML='<td>'+esc(o.num)+' <span class="added-badge">جديد</span></td><td>'+esc(o.date)+'</td><td>'+esc(o.project)+'</td><td>'+esc(o.supplier)+'</td><td>'+mats+'</td><td>'+esc(o.value||'—')+'</td><td>'+esc(o.requester)+'</td><td class="pr-action"><button class="btn-sm btn-approve">موافقة</button> <button class="btn-sm btn-reject">رفض</button></td>';return tr;}}
   };
   var cfg=PAGES[pageName];
   if(cfg){
@@ -234,7 +235,7 @@
       var stored=load(cfg.key,[]);
       stored.forEach(function(o){container.insertBefore(cfg.el(o),container.firstChild);});
       var pill=document.querySelector('.page-head .pill');
-      if(pill&&pill.textContent.trim().charAt(0)==='+'){ pill.classList.add('clickable'); pill.addEventListener('click',function(){ modal(cfg.title,cfg.sub,cfg.fields,function(o){stored.push(o);save(cfg.key,stored);container.insertBefore(cfg.el(o),container.firstChild);toast('تمت الإضافة ✓');}); }); }
+      if(pill&&pill.textContent.trim().charAt(0)==='+'){ pill.classList.add('clickable'); pill.addEventListener('click',function(){ modal(cfg.title,cfg.sub,cfg.fields,function(o){if(cfg.prepare)cfg.prepare(o);stored.push(o);save(cfg.key,stored);container.insertBefore(cfg.el(o),container.firstChild);toast('تمت الإضافة ✓');}); }); }
     }
   }
 
